@@ -40,40 +40,76 @@ class Player():
     def add_card(self,card):
         self.all_cards.append(card)
 
-# Create new deck
-deck = Deck()
-# Deal first 2 cards to player and dealer
-dealer = Dealer()
-player1 = Player("player1")
-for i in range(2):
-    dealer.add_card(deck.deal_card())
-    player1.add_card(deck.deal_card())
+def check_win(d, p, suppress_print):
+    '''
+    Check who won, player or dealer.
+    '''
+    s_d = sum_cards(d)
+    s_p = sum_cards(p)
+    # Check if player is on 21 or above
+    if s_p == 21:
+        if s_d == 21:
+            print("Both have 21! Tied!")
+            return ("Tie", "n")
+        elif s_d != 21:
+            print(f"{p.name} won with exact 21!")
+            return ("21", "p")
+    elif s_d == 21:
+        print(f"Dealer won with exact 21!")
+        return ("21", "d")
+    elif s_p > 21:
+        print(f"{p.name} busted! Dealer won!")
+        return ("Bust", "d")
+    elif s_p == s_d:
+        print(f"{p.name} won with exact 21!")
+        return ("Tie", "n")
+    elif s_p > s_d:
+        print(f"{p.name} won with closer score!")
+        return ("Clean", "p")
+    else:
+        print("Dealer won with closer score!")
+        return ("Clean", "d")
+
+def sum_cards(subject):
+    '''
+    Sums players cards.
+    '''
+    s = 0
+    for c in subject.all_cards:
+        s += c.value
+    return s
+    
 # Start game loop
 game_alive = True
 while game_alive:
-    # Check if anyone has 21 or more and end game if that's the case
-    s_p1 = 0
-    for c in player1.all_cards:
-        s_p1 += c.value
-    if s_p1 == 21:
-        print("Player1 won!")
-        game_alive = False
-        break
-    elif s_p1 > 21:
-        print("Dealer won!")
-        game_alive = False
-        break
-    s_d = 0
-    for c in dealer.all_cards:
-        s_d += c.value
-    if s_d == 21:
-        print("Dealer won!")
-        game_alive = False
-        break
-    elif s_d > 21:
-        print("Player1 won!")
-        game_alive = False
-        break
-
+    # Create new deck
+    deck = Deck()
+    # Deal first 2 cards to player and dealer
+    dealer = Dealer()
+    player1 = Player(input("Enter your name: "))
+    for i in range(2):
+        dealer.add_card(deck.deal_card())
+        player1.add_card(deck.deal_card())
+    # Check if anyone has 21 on start
+    win = check_win(dealer, player1, True)
+    if win[0] != "21":
+        print(f"Summ of your cards is: {sum_cards(player1)}")
+    else:
+        check_win(dealer, player1, False)
 
 # Ask player if it wants to pull another one or is done
+    pull = input("Do you want another card?(y/n): ")
+    while pull not in ["y","n"]:
+        pull = input("Please input valid value y or n: ")
+    if pull == "y":
+        player1.add_card(deck.deal_card())
+        print(f"Summ of your cards is: {sum_cards(player1)}")
+    else:
+        win = check_win(dealer, player1, False)
+        game_alive = input("Do you want another game?(y/n): ")
+        while game_alive not in ["y","n"]:
+            game_alive = input("Please input valid value y or n: ")
+        if game_alive == "y":
+            game_alive = True
+        else:
+            game_alice = False
