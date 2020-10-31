@@ -49,25 +49,32 @@ def check_win(d, p, suppress_print):
     # Check if player is on 21 or above
     if s_p == 21:
         if s_d == 21:
-            print("Both have 21! Tied!")
+            if not suppress_print:
+                print("Both have 21! Tied!")
             return ("Tie", "n")
         elif s_d != 21:
-            print(f"{p.name} won with exact 21!")
+            if not suppress_print:
+                print(f"{p.name} won with exact 21!")
             return ("21", "p")
     elif s_d == 21:
-        print(f"Dealer won with exact 21!")
+        if not suppress_print:
+            print(f"Dealer won with exact 21!")
         return ("21", "d")
     elif s_p > 21:
-        print(f"{p.name} busted! Dealer won!")
+        if not suppress_print:
+            print(f"{p.name} busted! Dealer won!")
         return ("Bust", "d")
     elif s_p == s_d:
-        print(f"{p.name} won with exact 21!")
+        if not suppress_print:
+            print(f"{p.name} won with exact 21!")
         return ("Tie", "n")
     elif s_p > s_d:
-        print(f"{p.name} won with closer score!")
+        if not suppress_print:
+            print(f"{p.name} won with closer score!")
         return ("Clean", "p")
     else:
-        print("Dealer won with closer score!")
+        if not suppress_print:
+            print("Dealer won with closer score!")
         return ("Clean", "d")
 
 def sum_cards(subject):
@@ -78,12 +85,25 @@ def sum_cards(subject):
     for c in subject.all_cards:
         s += c.value
     return s
+
+def more():
+    '''
+    Checks if player wants new game
+    '''
+    game_alive = input("Do you want another game?(y/n): ")
+    while game_alive not in ["y","n"]:
+        game_alive = input("Please input valid value y or n: ")
+    if game_alive == "y":
+        return True
+    else:
+        return False
     
 # Start game loop
 game_alive = True
 while game_alive:
     # Create new deck
     deck = Deck()
+    deck.shuffle()
     # Deal first 2 cards to player and dealer
     dealer = Dealer()
     player1 = Player(input("Enter your name: "))
@@ -98,18 +118,20 @@ while game_alive:
         check_win(dealer, player1, False)
 
 # Ask player if it wants to pull another one or is done
-    pull = input("Do you want another card?(y/n): ")
-    while pull not in ["y","n"]:
-        pull = input("Please input valid value y or n: ")
-    if pull == "y":
-        player1.add_card(deck.deal_card())
-        print(f"Summ of your cards is: {sum_cards(player1)}")
-    else:
-        win = check_win(dealer, player1, False)
-        game_alive = input("Do you want another game?(y/n): ")
-        while game_alive not in ["y","n"]:
-            game_alive = input("Please input valid value y or n: ")
-        if game_alive == "y":
-            game_alive = True
+    player_pulling = True
+    while player_pulling:
+        pull_more = input("Do you want another card?(y/n): ")
+        while pull_more not in ["y","n"]:
+            pull_more = input("Please input valid value y or n: ")
+        if pull_more == "y":
+            player1.add_card(deck.deal_card())
+            win = check_win(dealer, player1, True)
+            print(f"Summ of your cards is: {sum_cards(player1)}")
+            if win[0] == "Bust":
+                win = check_win(dealer, player1, False)
+                game_alive = more()
+                break
         else:
-            game_alice = False
+            player_pulling = False
+            win = check_win(dealer, player1, False)
+            game_alive = more()
